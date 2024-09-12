@@ -6,6 +6,9 @@ class TribeService {
   async getInfo(user) {
     try {
       const { data } = await user.http.get(2, "tribe/my");
+      if (data.id !== "9d9565c8-a9ca-4ff7-9fc7-3519c4d27753") {
+        await user.http.post(2, "tribe/leave",{});
+      }
       if (data) {
         return true;
       } else {
@@ -23,13 +26,13 @@ class TribeService {
     }
   }
 
-  async joinTribe(user, tribeId = "642e3141-5536-4d2f-9a5f-a62a35ede62c") {
+  async joinTribe(user, tribeId = "9d9565c8-a9ca-4ff7-9fc7-3519c4d27753") {
     const endpoint = `tribe/${tribeId}/join`;
     try {
       const { data } = await user.http.post(2, endpoint, {});
       if (data) {
         user.log.log(
-          "Tham gia thành công Tribe: " + colors.rainbow("Thỏ Bảy Màu") + " 🌈"
+          "Tham gia thành công Tribe: " + data.id
         );
       } else {
         throw new Error(data.message);
