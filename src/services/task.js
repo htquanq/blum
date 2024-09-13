@@ -57,10 +57,24 @@ class TaskService {
   async verifyTask(user, task) {
     let taskName = task.title;
     const param = `tasks/${task.id}/validate`;
+    if (!user.tasks) {
+      user.log.log(
+        colors.yellow(
+          `Nhiệm vụ ${colors.blue(
+            taskName
+          )} chưa có câu trả lời, chờ làm lại sau`
+        )
+      );
+      return;
+    }
     const taskDatabase = user.tasks.find((t) => t.id === task.id);
     if (!taskDatabase) {
-      user.log.logError(
-        `Nhiệm vụ ${colors.blue(taskName)} chưa có câu trả lời, chờ làm lại sau`
+      user.log.log(
+        colors.yellow(
+          `Nhiệm vụ ${colors.blue(
+            taskName
+          )} chưa có câu trả lời, chờ làm lại sau`
+        )
       );
       return;
     }
@@ -229,39 +243,43 @@ class TaskService {
         )}, chờ hoàn thành hết các nhiệm vụ con để nhận thưởng`
       );
       let countDone = 0;
-      for (const task of taskParent.subTasks) {
-        let complete = task.status;
-        if (complete === "FINISHED") {
-          countDone++;
-          user.log.log(
-            `✔️ Đã hoàn thành nhiệm vụ ${colors.blue(
-              taskParent.title + " --> " + task.title
-            )}`
-          );
-          continue;
-        }
-        if (complete === "NOT_STARTED" && task.type !== "PROGRESS_TARGET") {
-          complete = await this.startTask(user, task);
-          await delayHelper.delay(3);
-        }
-        if (complete === "READY_FOR_VERIFY") {
-          complete = await this.verifyTask(user, task);
-        }
-        if (complete === "READY_FOR_CLAIM" || complete === "STARTED") {
-          const statusClaim = await this.claimTask(user, task, false);
-          if (statusClaim) {
+      if (!taskParent?.subTasks) {
+        user.log.log(colors.yellow("Không tìm thấy câu hỏi con"));
+      } else {
+        for (const task of taskParent.subTasks) {
+          let complete = task.status;
+          if (complete === "FINISHED") {
             countDone++;
             user.log.log(
               `✔️ Đã hoàn thành nhiệm vụ ${colors.blue(
                 taskParent.title + " --> " + task.title
               )}`
             );
-          } else {
-            user.log.logError(
-              `❌ Làm nhiệm vụ ${colors.blue(
-                taskParent.title + " --> " + task.title
-              )} thất bại`
-            );
+            continue;
+          }
+          if (complete === "NOT_STARTED" && task.type !== "PROGRESS_TARGET") {
+            complete = await this.startTask(user, task);
+            await delayHelper.delay(3);
+          }
+          if (complete === "READY_FOR_VERIFY") {
+            complete = await this.verifyTask(user, task);
+          }
+          if (complete === "READY_FOR_CLAIM" || complete === "STARTED") {
+            const statusClaim = await this.claimTask(user, task, false);
+            if (statusClaim) {
+              countDone++;
+              user.log.log(
+                `✔️ Đã hoàn thành nhiệm vụ ${colors.blue(
+                  taskParent.title + " --> " + task.title
+                )}`
+              );
+            } else {
+              user.log.logError(
+                `❌ Làm nhiệm vụ ${colors.blue(
+                  taskParent.title + " --> " + task.title
+                )} thất bại`
+              );
+            }
           }
         }
       }
