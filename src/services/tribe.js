@@ -6,11 +6,10 @@ class TribeService {
   async getInfo(user) {
     try {
       const { data } = await user.http.get(2, "tribe/my");
-      if (data.id !== "9d9565c8-a9ca-4ff7-9fc7-3519c4d27753") {
-        await user.http.post(2, "tribe/leave",{});
-      }
       if (data) {
         return true;
+      } else if (data.id !== "9d9565c8-a9ca-4ff7-9fc7-3519c4d27753") {
+        await user.http.post(2, "tribe/leave",{});
       } else {
         throw new Error(data.message);
       }
