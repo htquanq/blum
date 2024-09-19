@@ -1,5 +1,6 @@
 import axios from "axios";
 import { HttpsProxyAgent } from "https-proxy-agent";
+import fileHelper from "../helpers/file.js";
 
 export class HttpService {
   constructor(log, proxy = null) {
@@ -84,6 +85,7 @@ export class HttpService {
       this.log.updateIp("🖥️");
       return null;
     }
+    console.log(`Kiểm tra proxy ${this.proxy}`);
     try {
       const proxyAgent = new HttpsProxyAgent(this.proxy);
       const response = await axios.get("https://api.ipify.org?format=json", {
@@ -97,6 +99,7 @@ export class HttpService {
         throw new Error("Proxy lỗi, kiểm tra lại kết nối proxy");
       }
     } catch (error) {
+      //fileHelper.writeLog("proxy_error.txt", this.proxy);
       this.log.updateIp("🖥️");
       return -1;
     }
