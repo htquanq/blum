@@ -220,7 +220,7 @@ class TaskService {
     const tasksFilter = dataTasks.filter((task) => {
       return (
         !skipTasks.includes(task.id) &&
-        !task.subTasks.every((task) => task.status === "FINISHED") &&
+        !task.subTasks?.every((task) => task.status === "FINISHED") &&
         !task.isHidden
       );
     });
@@ -228,7 +228,7 @@ class TaskService {
     if (tasksFilter.length) {
       user.log.log(
         `Còn ${colors.blue(
-          tasksFilter[0].subTasks.length
+          tasksFilter[0].subTasks?.length
         )} nhiệm vụ ${colors.blue("Weekly")} chưa hoàn thành`
       );
     } else {
